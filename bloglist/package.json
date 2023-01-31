@@ -7,8 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "git": "cd .. && git add . && git commit -m",
-    "postgit": "cd bloglist"
+    "git": "cd .. && git add . && git commit -m"
   },
   "author": "",
   "license": "ISC",
