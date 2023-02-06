@@ -28,9 +28,33 @@ describe('when there are already some blogs', () => {
       .get('/api/blogs')
     expect(res.body[0].id).toBeDefined()
   })
+
+  test('a blog is returned when valid id is given', async () => {
+    const blogs = await helper.blogsInDb()
+    const validId = blogs[0].id
+    const res = await api
+      .get(`/api/blogs/${validId}`)
+      .expect(200)
+
+    expect(res.body).toEqual(blogs[0])
+  })
+
+  test('fails with 400 if id is invalid', async () => {
+    const invalidId = 1000
+    await api
+      .get(`/api/blogs/${invalidId}`)
+      .expect(400)
+  })
+
+  test('fails with 404 if blog is missing', async () => {
+    const missingId = helper.nonExistingId
+    await api
+      .get(`/api/blogs/${missingId}`)
+      .expect(404)
+  })
 })
 
-describe('addition of a new note', () => {
+describe('addition of a new blog', () => {
   test('valid blog can be added', async () => {
     const newBlog = {
       title: 'Dumb sentence for a title',
@@ -95,6 +119,88 @@ describe('addition of a new note', () => {
 
     const res = await api.get('/api/blogs')
     expect(res.body).toHaveLength(helper.initialBlogs.length)
+  })
+})
+
+describe('deletion of a blog', () => {
+  test('succeeds with code 204 if id is valid', async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToDelete = blogs[0]
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const res = await api.get('/api/blogs')
+    expect(res.body).not.toContain(blogToDelete.title)
+  })
+
+  test('fails with code 400 if id is invalid', async () => {
+    const invalidId = '1000'
+
+    await api
+      .delete(`/api/blogs/${invalidId}`)
+      .expect(400)
+
+    const res = await api.get('/api/blogs')
+    expect(res.body).toHaveLength(helper.initialBlogs.length)
+  })
+})
+
+describe('update of a blog', () => {
+  test('updates blog with code 200 if id is valid', async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToUpdate = {
+      title: blogs[0].title,
+      author: blogs[0].author,
+      url: blogs[0].url,
+      likes: 2000,
+      id: blogs[0].id,
+    }
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+
+    const res = await api.get(`/api/blogs/${blogs[0].id}`)
+    expect(res.body.likes).toEqual(2000)
+  })
+
+  test('fails with code 400 if id is invalid', async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToUpdate = {
+      title: 'fake',
+      author: 'fake',
+      url: 'fake',
+      likes: 2000,
+      id: 1000,
+    }
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(400)
+
+    const res = await api.get(`/api/blogs/${blogs[0].id}`)
+    expect(res.body.likes).not.toEqual(2000)
+  })
+  test('fails with code 404 if id is nonexistent', async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToUpdate = {
+      title: 'fake',
+      author: 'fake',
+      url: 'fake',
+      likes: 2000,
+      id: helper.nonExistingId,
+    }
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(404)
+
+    const res = await api.get(`/api/blogs/${blogs[0].id}`)
+    expect(res.body.likes).not.toEqual(2000)
   })
 })
 
