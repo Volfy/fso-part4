@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcrypt')
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const app = require('../app')
 
 const api = supertest(app)
@@ -201,6 +203,128 @@ describe('update of a blog', () => {
 
     const res = await api.get(`/api/blogs/${blogs[0].id}`)
     expect(res.body.likes).not.toEqual(2000)
+  })
+})
+
+describe('user stuff', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('not', 10)
+    const user = new User({ username: 'root', passwordHash })
+    await user.save()
+  })
+
+  test('getting users succeeds', async () => {
+    const res = await api
+      .get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    expect(res.body).toHaveLength(1)
+  })
+
+  test('posting user with unique username succeeds', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      username: 'notroot',
+      password: 'pass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+
+    const usernames = usersAtEnd.map((u) => u.username)
+    expect(usernames).toContain(userToAdd.username)
+  })
+  test('posting user with nonunique username fails', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      username: 'root',
+      password: 'pass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('posting user with no username fails', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      // username: 'root',
+      password: 'pass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('posting user with no password fails', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      username: 'root',
+      // password: 'pass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('posting user with < 3 char username fails', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      username: 'ro',
+      password: 'pass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('posting user with < 3 char password fails', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const userToAdd = {
+      username: 'root',
+      password: 'pa',
+    }
+
+    await api
+      .post('/api/users')
+      .send(userToAdd)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
   })
 })
 
