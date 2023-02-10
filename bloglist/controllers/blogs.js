@@ -2,8 +2,7 @@
 const router = require('express').Router()
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
-const User = require('../models/user')
-
+const { userExtractor } = require('../utils/middleware')
 
 router.get('/', async (req, res) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
@@ -15,19 +14,12 @@ router.get('/:id', async (req, res) => {
   res.json(blog)
 })
 
-router.post('/', async (req, res) => {
-  const { body } = req
+router.post('/', userExtractor, async (req, res) => {
+  const { body, user } = req
 
   if (body.title === undefined || body.url === undefined) {
     return res.status(400).json({ error: 'title or url missing' })
   }
-
-  const decodedToken = jwt.verify(req.token, process.env.SECRET)
-  if (!decodedToken.id) {
-    return res.status(401).json({ error: 'token invalid' })
-  }
-
-  const user = await User.findById(decodedToken.id)
 
   const blog = new Blog({
     title: body.title,
@@ -44,8 +36,21 @@ router.post('/', async (req, res) => {
   return res.status(201).json(saved)
 })
 
-router.delete('/:id', async (req, res) => {
-  await Blog.findByIdAndRemove(req.params.id)
+router.delete('/:id', userExtractor, async (req, res) => {
+  const blogId = req.params.id
+  const blog = await Blog.findById(blogId)
+  const { user } = req
+
+  if (!blog) {
+    return res.status(204).end()
+  }
+  if (blog.user.toString() !== user.id.toString()) {
+    return res.status(401).json({ error: 'blog not created by current user' })
+  }
+  await Blog.findByIdAndRemove(blogId)
+  user.blogs = user.blogs.filter((b) => b.toString() !== blogId.toString())
+  await user.save()
+
   return res.status(204).end()
 })
 
