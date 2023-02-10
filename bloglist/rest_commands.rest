@@ -36,10 +36,10 @@ content-type: application/json
 ###
 POST http://localhost:3003/api/blogs HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZha2VmYWtlMiIsImlkIjoiNjNlNTBiM2NhYTM1NjJkMWJmODM1ZjczIiwiaWF0IjoxNjc2MDQyMTIyfQ.-ElPxSffkyvGvQjEzQ3ZPbz4iWQfvDHMVoYuyKXXPas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZha2VmYWtlMiIsImlkIjoiNjNlNTBiM2NhYTM1NjJkMWJmODM1ZjczIiwiaWF0IjoxNjc2MDQzMTg4fQ.cuXez2MVRQk5Hck5S4iyyfWG6W_UDIPkZgl7AKJEF0Q
 
 {
-    "title": "To  222222",
+    "title": "To 44444",
     "author": "John doe2",
     "url": "fakeurl2.ssss",
     "likes": 23
@@ -71,9 +71,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNhb
 
 
 ### SHOULD PASS
-delete http://localhost:3003/api/blogs/63e66005a9b4e751c4f2b228
+delete http://localhost:3003/api/blogs/63e663bf63be56fc3f081fa4
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZha2VmYWtlMiIsImlkIjoiNjNlNTBiM2NhYTM1NjJkMWJmODM1ZjczIiwiaWF0IjoxNjc2MDQwOTYzfQ.fcTvMdbt766ai9x0-JOT4CUXe0FttX0rRN0v9FNbugA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZha2VmYWtlMiIsImlkIjoiNjNlNTBiM2NhYTM1NjJkMWJmODM1ZjczIiwiaWF0IjoxNjc2MDQzMTg4fQ.cuXez2MVRQk5Hck5S4iyyfWG6W_UDIPkZgl7AKJEF0Q
 
 
 
