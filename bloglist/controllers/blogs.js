@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 const router = require('express').Router()
-const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const { userExtractor } = require('../utils/middleware')
 
