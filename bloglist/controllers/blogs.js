@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 const router = require('express').Router()
+const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+
 
 router.get('/', async (req, res) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
@@ -20,20 +22,22 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'title or url missing' })
   }
 
-  const users = await User.find({})
-  const userId = users.map((u) => u.toJSON())[0].id
+  const decodedToken = jwt.verify(req.token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'token invalid' })
+  }
+
+  const user = await User.findById(decodedToken.id)
 
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes ? body.likes : 0,
-    user: userId,
+    user: user._id,
   })
 
   const saved = await blog.save()
-
-  const user = await User.findById(userId)
   user.blogs = user.blogs.concat(saved._id)
   await user.save()
 
