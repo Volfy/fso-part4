@@ -23,3 +23,12 @@ content-type: application/json
     "name": "fakefake",
     "password": "1234"
 }
+
+###
+post http://localhost:3003/api/login
+content-type: application/json
+
+{
+    "username": "fakefake2",
+    "password": "1234"
+}
